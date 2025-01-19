@@ -12,20 +12,22 @@ if [ $# -gt 2 ]; then
 	echo -e "$RED"Usage: $0 \<PUSH_SWAP\> \<CHECKER\>"$RESET"
 	exit 2
 fi
-if [ $# -gt 0 ]; then
-	PUSH_SWAP=$1
-else
-	PUSH_SWAP=./push_swap
-fi
-if [ $# -gt 1 ]; then
-	CHECKER=$2
-else
-	CHECKER=./checker
-fi
+
+PUSH_SWAP=${1:-./push_swap}
+CHECKER=${2:-./checker}
 
 if [ ! -x "$PUSH_SWAP" ]; then
 	echo -e "$RED"Invalid Push Swap"$RESET"
 	exit 2
+fi
+
+if [ $# -lt 2 ] && [ ! -f "$CHECKER" ]; then
+	echo -e "$YELLOW"Downloading checker ..."$RESET";
+	curl -L --fail -o checker https://github.com/Zak4b/push_swap_tester/raw/main/checker || {
+		echo -e "$RED"Failed to download checker"$RESET"
+		exit 1
+	}
+	chmod +x checker
 fi
 if [ ! -x "$CHECKER" ]; then
 	echo -e "$RED"Invalid Checker"$RESET"
