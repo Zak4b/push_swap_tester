@@ -117,7 +117,12 @@ push_swap_bench_with()
 	total=0;
 	max=0;
 	min=999999;
+	echo "Minimum: --";
+    echo "Average: --";
+    echo "Maximum: --";
+	i=0;
 	for ARG in "$@"; do
+		i=$((i + 1));
 		lines=$($PUSH_SWAP $ARG | wc -l);
 		total=$((total + lines));
 		if [ $lines -gt $max ]; then
@@ -126,11 +131,13 @@ push_swap_bench_with()
 		if [ $lines -lt $min ]; then
 			min=$lines;
 		fi
+		tput cuu 3 
+		average=$((total / $i));
+		echo "Minimum: $min "
+        echo "Average: $average "
+        echo "Maximum: $max "
 	done
-	average=$((total / $#));
-	echo "Minimum: $min";
-	echo "Average: $average";
-	echo "Maximum: $max";
+	echo
 }
 
 generate_args()
@@ -164,6 +171,9 @@ push_swap_test()
 	return $?
 }
 
+trap 'tput cnorm; echo -e "\n$RED""Operation interrupted $RESET"; exit' INT TERM
+tput civis
+
 push_swap_memtest "" "''" "1 2 1" "1 2 3 4 5 6 7 8 1" "1 2 a" "1q" "1 5 9 2 4" "1 3 2" "$(random_values 50)" "$(random_values 100)" "$(random_values 500)"
 push_swap_nooutput "" "1" "1 2" "1 2 3" "1 2 3 4 5 6 7 8 9 10 11"
 
@@ -179,3 +189,4 @@ push_swap_test 500 20
 push_swap_bench 5 50
 push_swap_bench 100 100
 push_swap_bench 500 100
+tput cnorm
