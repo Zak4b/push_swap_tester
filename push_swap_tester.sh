@@ -55,12 +55,12 @@ push_swap_memtest()
 	echo -e "$YELLOW"Memory test"$RESET";
 	errors="";
 	for ARG in "$@"; do
-		valgrind_output=$( (valgrind --leak-check=full $PUSH_SWAP $ARG) 2>&1 >/dev/null );
-		if [ -n "$(echo "$valgrind_output" | grep "ERROR SUMMARY: 0")" ]; then
-			echo -ne "$GREEN""OK$RESET ";
-		else
+		valgrind_output=$( (valgrind --leak-check=full --error-exitcode=111 $PUSH_SWAP $ARG) 2>&1 >/dev/null );
+		if [ $? -eq 111 ] || echo "$valgrind_output" | grep -q "still reachable: [1-9]"; then
 			echo -ne "$RED""KO$RESET ";
-			errors="$errors\nKO with $ARG";
+			errors="$errors\n\n$valgrind_output";
+		else
+			echo -ne "$GREEN""OK$RESET ";
 		fi
 	done
 	if [ -n "$errors" ]; then
