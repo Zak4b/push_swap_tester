@@ -16,7 +16,7 @@ fi
 PUSH_SWAP=${1:-./push_swap}
 CHECKER=${2:-./checker}
 
-if [ ! -x "$PUSH_SWAP" ]; then
+if [ ! -f "$PUSH_SWAP" ] || [ ! -x "$PUSH_SWAP" ]; then
 	echo -e "$RED"Invalid Push Swap"$RESET"
 	exit 2
 fi
