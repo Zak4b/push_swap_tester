@@ -8,30 +8,26 @@ RESET="\033[0m"
 
 echo -e "$BLUE"Push Swap tester"$RESET";
 
-if [ $# -gt 2 ]; then
-	echo -e "$RED"Usage: $0 \<PUSH_SWAP\> \<CHECKER\>"$RESET"
+if [ $# -gt 1 ]; then
+	echo -e "$RED"Usage: $0 \<PUSH_SWAP\>"$RESET"
 	exit 2
 fi
 
 PUSH_SWAP=${1:-./push_swap}
-CHECKER=${2:-./checker}
+CHECKER=./checker
 
 if [ ! -f "$PUSH_SWAP" ] || [ ! -x "$PUSH_SWAP" ]; then
 	echo -e "$RED"Invalid Push Swap"$RESET"
 	exit 2
 fi
 
-if [ $# -lt 2 ] && [ ! -f "$CHECKER" ]; then
+if [ ! -f "$CHECKER" ] || [ ! -x "$CHECKER" ]; then
 	echo -e "$YELLOW"Downloading checker ..."$RESET";
 	curl -L --fail -o checker https://github.com/Zak4b/push_swap_tester/raw/main/checker || {
 		echo -e "$RED"Failed to download checker"$RESET"
 		exit 1
 	}
 	chmod +x checker
-fi
-if [ ! -x "$CHECKER" ]; then
-	echo -e "$RED"Invalid Checker"$RESET"
-	exit 2
 fi
 
 is_positive_integer() {
@@ -53,21 +49,21 @@ random_values()
 push_swap_memtest()
 {
 	echo -e "$YELLOW"Memory test"$RESET";
-	errors="";
+	errors=();
 	for ARG in "$@"; do
 		valgrind_output=$( (valgrind --leak-check=full --error-exitcode=111 $PUSH_SWAP $ARG) 2>&1 >/dev/null );
 		if [ $? -eq 111 ] || echo "$valgrind_output" | grep -q "still reachable: [1-9]"; then
 			echo -ne "$RED""KO$RESET ";
-			errors="$errors\n\n$valgrind_output";
+			errors+=("$valgrind_output");
 		else
 			echo -ne "$GREEN""OK$RESET ";
 		fi
 	done
-	if [ -n "$errors" ]; then
-		echo -e "$RED$errors$RESET";
+	echo
+	if [ ${#errors[@]} -ne 0 ]; then
+		printf "$RED%s\n" "${errors[@]}"
 		return 1
 	else
-		echo
 		return 0
 	fi
 }
@@ -75,41 +71,42 @@ push_swap_memtest()
 push_swap_nooutput()
 {
 	echo -e "$YELLOW"No output test"$RESET";
-	errors="";
+	errors=();
 	for ARG in "$@"; do
 		output=$($PUSH_SWAP $ARG 2>&1);
 		if [ -z "$output" ]; then
 			echo -ne "$GREEN""OK$RESET ";
 		else
 			echo -ne "$RED""KO$RESET ";
-			errors="$errors\nKO with $ARG";
+			errors+=("KO with \"$ARG\"");
 		fi
 	done
-	if [ -n "$errors" ]; then
-		echo -e "$RED$errors$RESET";
+	echo
+	if [ ${#errors[@]} -ne 0 ]; then
+		printf "$RED%s\n" "${errors[@]}"
 		return 1
 	else
-		echo
 		return 0
 	fi
 }
 
 push_swap_test_with()
 {
-	errors="";
+	errors=();
 	for ARG in "$@"; do 
 		result=$($PUSH_SWAP $ARG | $CHECKER $ARG);
 		if [ "$result" = "OK" ]; then
 			echo -ne "$GREEN$result$RESET ";
 		else
-			errors="$errors\nKO with $ARG";
+			echo -ne "$RED$result$RESET ";
+			errors+=("KO with \"$ARG\"");
 		fi
 	done
-	if [ -n "$errors" ]; then
-		echo -e "\n$RED$errors$RESET";
+	echo
+	if [ ${#errors[@]} -ne 0 ]; then
+		printf "$RED%s\n" "${errors[@]}"
 		return 1
 	else
-		echo
 		return 0
 	fi
 }
@@ -139,7 +136,6 @@ push_swap_bench_with()
         echo "Average: $average "
         echo "Maximum: $max "
 	done
-	echo
 }
 
 generate_args()
@@ -180,7 +176,7 @@ push_swap_memtest "" "''" "1 2 1" "1 2 3 4 5 6 7 8 1" "1 2 a" "1q" "1 5 9 2 4" "
 push_swap_nooutput "" "1" "1 2" "1 2 3" "1 2 3 4 5 6 7 8 9 10 11"
 
 echo -e "$YELLOW"Testing 2 values"$RESET";
-push_swap_test_with "1 2" "2 1"
+push_swap_test_with "1 2" "2 1" "2 1"
 echo -e "$YELLOW"Testing 3 values"$RESET";
 push_swap_test_with "1 2 3" "1 3 2" "2 1 3" "2 3 1" "3 1 2" "3 2 1"
 echo -e "$YELLOW"Testing 5 values"$RESET";
