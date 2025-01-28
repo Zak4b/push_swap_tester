@@ -94,7 +94,7 @@ push_swap_test_with()
 {
 	errors=();
 	for ARG in "$@"; do 
-		result=$($PUSH_SWAP $ARG | $CHECKER $ARG);
+		result=$($PUSH_SWAP $ARG 2>&1 | $CHECKER $ARG);
 		if [ "$result" = "OK" ]; then
 			echo -ne "$GREEN$result$RESET ";
 		else
@@ -103,7 +103,7 @@ push_swap_test_with()
 		fi
 	done
 	echo
-	if [ ${#errors[@]} -ne 0 ]; then
+	if [ ${#errors[@]} -ne 0 ] && [ ${#errors[@]} -ne $# ]; then
 		printf "$RED%s\n" "${errors[@]}"
 		return 1
 	else
