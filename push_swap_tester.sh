@@ -14,7 +14,7 @@ if [ $# -gt 1 ]; then
 fi
 
 PUSH_SWAP=${1:-./push_swap}
-CHECKER=./checker
+CHECKER=./.checker
 
 if [ ! -f "$PUSH_SWAP" ] || [ ! -x "$PUSH_SWAP" ]; then
 	echo -e "$RED"Invalid Push Swap"$RESET"
@@ -23,14 +23,15 @@ fi
 
 if [ ! -f "$CHECKER" ] || [ ! -x "$CHECKER" ]; then
 	echo -e "$YELLOW"Downloading checker ..."$RESET";
-	curl -L --fail -o checker https://github.com/Zak4b/push_swap_tester/raw/main/checker || {
+	curl -L --fail -o "$CHECKER" https://github.com/Zak4b/push_swap_tester/raw/main/checker || {
 		echo -e "$RED"Failed to download checker"$RESET"
 		exit 1
 	}
-	chmod +x checker
+	chmod +x "$CHECKER"
 fi
 
-is_positive_integer() {
+is_positive_integer()
+{
     if [[ "$1" =~ ^[0-9]+$ ]]; then
         return 0
     else
@@ -173,7 +174,7 @@ push_swap_test()
 trap 'tput cnorm; echo -e "\n$RED""Operation interrupted $RESET"; exit' INT TERM
 tput civis
 
-push_swap_memtest "" "''" "1 2 1" "1 2 3 4 5 6 7 8 1" "1 2 a" "1q" "1 5 9 2 4" "1 3 2" "$(random_values 50)" "$(random_values 100)" "$(random_values 500)"
+push_swap_memtest "" "''" "'' ''" "1 2 1" "1 2 3 4 5 6 7 8 1" "1 2 a" "1q" "a" "aq" "1 5 9 2 4" "1 3 2" "$(random_values 50)" "$(random_values 100)" "$(random_values 500)"
 push_swap_nooutput "" "1" "1 2" "1 2 3" "1 2 3 4 5 6 7 8 9 10 11"
 
 echo -e "$YELLOW"Testing 2 values"$RESET";
