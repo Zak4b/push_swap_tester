@@ -43,7 +43,8 @@ random_values()
 	if ! is_positive_integer "$1"; then
         return 1
     fi
-	seq "$1" | shuf | tr '\n' ' '
+	min=$(( -$1 ))
+	seq "$min" "$1" | shuf -n "$1" | tr '\n' ' '
 }
 
 push_swap_memtest()
